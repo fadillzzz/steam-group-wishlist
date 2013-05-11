@@ -1,6 +1,6 @@
 #!/bin/env node
 require('log-timestamp')
-console.log('SWL -> https://github.com/mabako/steam-group-wishlist');
+console.log('SWL -> https://github.com/fadillzzz/steam-group-wishlist');
 
 var express = require('express.io')
   , app = express()
@@ -8,7 +8,7 @@ var express = require('express.io')
   , request = require('request')
   , cheerio = require('cheerio')
   , openid = require('openid')
-  , relyingParty = new openid.RelyingParty('http://swl.mabako.net/!/auth', 'http://swl.mabako.net/', true, false, []);
+  , relyingParty = new openid.RelyingParty('http://steamwishlist-fad.rhcloud.com/!/auth', 'http://steamwishlist-fad.rhcloud.com/', true, false, []);
 app.http().io();
 
 var appDB = {};
