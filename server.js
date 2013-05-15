@@ -19,6 +19,11 @@ function fetchBase(url, func) {
   }).end();
 }
 
+function isNormalInteger(str) {
+    var n = ~~Number(str);
+    return String(n) === str && n >= 0;
+}
+
 function sendTitle(req, title, app) {
   if(app) {
     if(appDB[app]) {
@@ -46,7 +51,7 @@ function sendTitle(req, title, app) {
 function memberlistUpdate(req, page) {
   // numeric group id? they have different urls
   var name = req.data.name;
-  var url = ('' + parseInt(name, 10)).length == name.length ? ('gid/' + name) : ('groups/' + name);
+  var url = isNormalInteger(name) ? ('gid/' + name) : ('groups/' + name);
   fetchBase('http://steamcommunity.com/' + url + '/memberslistxml/?xml=1&p=' + page, function(err, content) {
     if(err) {
       console.log('Member fetching error for ' + url + '\n' + err);
