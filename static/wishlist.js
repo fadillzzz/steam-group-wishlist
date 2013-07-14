@@ -12,7 +12,8 @@ start = function(groupName) {
 
     function processCurrentMember(data) {
       processNext();
-      var linktext = '<a href="http://steamcommunity.com/profiles/' + data.profile + '/" target="_blank">' + data.name + '</a>';
+      var linktext = '<a href="http://steamcommunity.com/profiles/' + data.profile + '/" target="_blank"' +
+        (data.star ? ' class="star"' : '') + '>' + data.name + '</a>';
       for(var i = 0; i < data.games.length; ++ i) {
         var game = data.games[i];
         var obj = $('#g' + game);
@@ -60,7 +61,7 @@ start = function(groupName) {
     }
 
     function updateCounter() {
-      document.getElementById('people').innerHTML = offset + '/' + members.length + ' &mdash; You may want to visit the <a href="http://www.steamgifts.com/forum/UHlGN" target="_blank">forum topic</a>.';
+      document.getElementById('peoplec').innerHTML = offset + '/' + members.length + ' &mdash; ';
     }
 
     function processNext() {
@@ -109,7 +110,7 @@ start = function(groupName) {
     });
 
     function createGame(id, data) {
-      $('#games').append('<div id="g' + id + '"><a href="http://store.steampowered.com/app/' + id + '" target="_blank"><img src="' + data.image + '"/></a><div class="r"><div class="cnt">0</div><div class="pr">' + data.price + '</div><div class="n"><a href="http://store.steampowered.com/app/' + id + '" target="_blank">' + data.name + '</a></div><div class="ppl"></div></div></div>');
+      $('#games').append('<div id="g' + id + '"><a href="http://store.steampowered.com/app/' + id + '" target="_blank"><img src="' + data.image + '"/></a><div class="r"><div class="cnt">0</div><div class="pr">' + data.price + '</div><div class="n f"><a href="http://store.steampowered.com/app/' + id + '" target="_blank">' + data.name + '</a></div><div class="ownl"><a href="/' + groupName + '/' + id + '/">Who owns this?</a></div><div class="ppl"></div></div></div>');
     }
 
     updateCounter();

@@ -1,4 +1,7 @@
 #!/bin/env node
+
+var baseURL = 'http://swl.mabako.net';
+
 require('log-timestamp')
 console.log('SWL -> https://github.com/fadillzzz/steam-group-wishlist');
 
@@ -8,7 +11,8 @@ var express = require('express.io')
   , request = require('request')
   , cheerio = require('cheerio')
   , openid = require('openid')
-  , relyingParty = new openid.RelyingParty('http://steamwishlist-fad.rhcloud.com/!/auth', 'http://steamwishlist-fad.rhcloud.com/', true, false, []);
+  , relyingParty = new openid.RelyingParty(baseURL + '/!/auth', baseURL, true, false, [])
+  , stars = require('./data/stars.js');
 app.http().io();
 
 var appDB = {};
@@ -17,11 +21,6 @@ function fetchBase(url, func) {
   request(url, function(err, res, body) {
     func(err, body);
   }).end();
-}
-
-function isNormalInteger(str) {
-    var n = ~~Number(str);
-    return String(n) === str && n >= 0;
 }
 
 function sendTitle(req, title, app) {
@@ -127,9 +126,11 @@ app.io.route('Hi-diddly-ho, neighborino', function(req) {
 });
 
 // Fetches all groups of a user along with his name
-function fetchGroups(id, func) {
+function fetchGroups(id, res, func) {
+  console.log('Fetching groups for profile ' + id);
   fetchBase('http://steamcommunity.com/profiles/' + id + '/groups', function(err, content) {
     if(err) {
+      console.log(err);
       res.writeHead(500);
       res.end();
     } else {
@@ -153,7 +154,7 @@ app.get('/!/check', function(req, res) {
   var id = req.signedCookies.id;
   var selected = req.params.group || 'friends';
   if(id) {
-    fetchGroups(id, function(profileName, groups) {
+    fetchGroups(id, res, function(profileName, groups) {
       res.render('sel.jade', {groups: groups, id: id, selected: selected, gr: req.params.group});
     });
   } else {
@@ -216,7 +217,7 @@ app.io.route('?', function(req) {
         appDB[appID] = appEntry;
       }
     });
-    req.io.emit('u', {name: name, profile: req.data, games: games});
+    req.io.emit('u', {name: name, profile: req.data, games: games, star: stars.indexOf(req.data) >= 0});
   });
 })
 
@@ -234,8 +235,8 @@ var matchOwnedGamesEnd = '];';
 app.io.route('owned?', function(req) {
   fetchBase('http://steamcommunity.com/profiles/' + req.data + '/games?tab=all&l=english', function(err, res) {
     var $ = cheerio.load(res);
-    if(res.indexOf('<p class="errorPrivate">This profile is private.</p>') >= 0) {
-      req.io.emit('owned!', {profile: req.data, games: null, name: $('title').text().replace('Steam Community :: ID :: ','')});
+    if(res.indexOf('<div class="profile_private_info">') >= 0) {
+      req.io.emit('owned!', {profile: req.data, games: null, name: $('title').text().replace('Steam Community :: ','')});
     } else {
       // Well, this is awkward.
       var start = res.indexOf(matchOwnedGamesStart) + matchOwnedGamesStart.length;
@@ -253,7 +254,7 @@ app.io.route('owned?', function(req) {
           // trading card profile
           name = $('.profile_small_header_name').text().trim();
 
-        req.io.emit('owned!', {profile: req.data, games: owned, name: name});
+        req.io.emit('owned!', {profile: req.data, games: owned, name: name, star: stars.indexOf(req.data) >= 0});
       } catch(e) {
         console.log('Error when trying to work with:')
         console.log(res)
@@ -271,7 +272,7 @@ app.get('/group/:name', function(req, res) {
 app.get('/', function(req, res) {
   var id = req.signedCookies.id;
   if(id) {
-    fetchGroups(id, function(profileName, groups) {
+    fetchGroups(id, res, function(profileName, groups) {
       res.render('profile.jade', {name: profileName, groups: groups, id: id});
     });
   } else {
@@ -309,6 +310,10 @@ app.get('/!', function(req, res) {
   });
 });
 
+// Donating... just static, really.
+app.get('/!/donate', function(req, res) {
+  res.render('donate.jade');
+});
 
 // Send the file to do all the client-side processing
 var nameregex = '([\\d\\w\\-]+)';

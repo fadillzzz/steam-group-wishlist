@@ -10,7 +10,8 @@ start = function(groupName, app) {
     function processCurrentMember(data) {
       updateCounter();
       processNext();
-      var linktext = '<a href="http://steamcommunity.com/profiles/' + data.profile + '/" target="_blank">' + data.name + '</a>';
+      var linktext = '<a href="http://steamcommunity.com/profiles/' + data.profile + '/" target="_blank"' +
+        (data.star ? ' class="star"' : '') + '>' + data.name + '</a>';
       var container = 'haznot'
       if(data.games == null)
         container = 'private';
@@ -24,7 +25,7 @@ start = function(groupName, app) {
     }
 
     function updateCounter() {
-      document.getElementById('people').innerHTML = offset + '/' + members.length + ' &mdash; You may want to visit the <a href="http://www.steamgifts.com/forum/UHlGN" target="_blank">forum topic</a>.';
+      document.getElementById('peoplec').innerHTML = offset + '/' + members.length + ' &mdash; ';
     }
 
     function processNext() {

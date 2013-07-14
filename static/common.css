@@ -1,18 +1,21 @@
 body {
   font-family: 'Roboto Slab', sans-serif;
 }
-.ppl a, .n a, #people a {
+.ppl a, .n a, #people a, .ownl a {
   color: #000;
   text-decoration: none;
 }
-.cnt, .pr {
+a.star {
+  background: #eafafd;
+}
+.cnt, .pr, .f {
   float: left;
 }
-.cnt, .n, .pr {
+.cnt, .n, .pr, .ownl {
   padding-right: 0.5em;
   padding-left: 0.5em;
 }
-.n {
+.n, .ownl {
  display: inline;
 }
 img {
@@ -34,6 +37,9 @@ img {
 .n {
   background: #eee;
 }
+.ownl {
+  background: #c8ffd5;
+}
 .err {
   background: #e71717;
   color: #fff;
@@ -49,5 +55,6 @@ img {
   color: #fff;
 }
 .ppl a + a:before {
+  background: #fff;
   content: ", ";
 }
