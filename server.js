@@ -1,6 +1,6 @@
 #!/bin/env node
 
-var baseURL = 'http://swl.mabako.net';
+var baseURL = 'http://steamwishlist-fad.rhcloud.com/';
 
 require('log-timestamp')
 console.log('SWL -> https://github.com/fadillzzz/steam-group-wishlist');
