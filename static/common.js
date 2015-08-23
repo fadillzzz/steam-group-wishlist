@@ -26,7 +26,7 @@ g = {
 
 
 function commonInit(index, groupName, func) {
-  io = io.connect((window.location.hostname == 'swl.mabako.net' || window.location.hostname.indexOf('rhcloud.com') > 0) ? (window.location.hostname + ':8000') : null);
+  io = io.connect();
 
   var members = [];
   io.on('m', function(data) {
