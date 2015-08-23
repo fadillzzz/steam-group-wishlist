@@ -92,7 +92,7 @@ module.exports = {
       $('.wishlistRow').each(function(i, elem) {
         // Reduce this to the App ID
         var obj = $(this);
-        var appLink = obj.find('.gameLogo').children('a').first();
+        var appLink = obj.find('.gameListRowLogo').children('a').first();
         var appID = parseInt(appLink.attr('href').substr(30));
         games[i] = appID;
 
