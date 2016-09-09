@@ -16,10 +16,10 @@ module.exports = {
     var id = req.signedCookies.steamID;
     if(id) {
       base.groups(id, res, function(err, profileName, groups) {
-        res.render('profile.jade', {name: profileName, groups: groups, id: id, err: typeof err != 'undefined'});
+        res.render('profile.pug', {name: profileName, groups: groups, id: id, err: typeof err != 'undefined'});
       });
     } else {
-      res.render('login.jade');
+      res.render('login.pug');
     }
   },
   openid: function(req, res) {
@@ -51,18 +51,18 @@ module.exports = {
   },
   groupcheck: function(req, res) {
     if(req.params.group || req.params.user) {
-      res.render('sel.jade', {groups: [], id: null, groupid: req.params.group || ('friends/' + req.params.user)});
+      res.render('sel.pug', {groups: [], id: null, groupid: req.params.group || ('friends/' + req.params.user)});
     } else {
       var id = req.signedCookies.steamID;
       if(id) {
         base.groups(id, res, function(err, profileName, groups) {
           if(!err)
-            res.render('sel.jade', {groups: groups, id: id, groupid: null});
+            res.render('sel.pug', {groups: groups, id: id, groupid: null});
           else
-          res.render('sel.jade', {groups: [], id: null, groupid: null});
+          res.render('sel.pug', {groups: [], id: null, groupid: null});
         });
       } else {
-        res.render('sel.jade', {groups: [], id: null, groupid: null});
+        res.render('sel.pug', {groups: [], id: null, groupid: null});
       }
     }
   },
@@ -78,7 +78,7 @@ module.exports = {
             friends[i] = { url: obj.find('a').attr('href').replace(/http:\/\/steamcommunity\.com\/(id|profiles)\//, ''), name: obj.find('.friendBlockContent').text().substr(6).split("\r")[0] }
           });
           friends.sort(function(a, b) { return a.name.toLowerCase() == b.name.toLowerCase() ? 0 : a.name.toLowerCase() < b.name.toLowerCase() ? -1 : 1 })
-          res.render('selfriends.jade', {friends: friends});
+          res.render('selfriends.pug', {friends: friends});
         } else {
           res.redirect('/');
         }

@@ -6,7 +6,7 @@ module.exports = {
     console.log('Looking up ' + req.data + ' in Store');
     base.fetch('http://store.steampowered.com/search/suggest?term=' + encodeURIComponent(req.data) + '&f=games&cc=US&l=english', function(err, res) {
       if(err || !res) {
-        req.io.emit('storesearched', {input: req.data, result: []});
+        req.socket.emit('storesearched', {input: req.data, result: []});
       } else {
         $ = cheerio.load(res);
 
@@ -22,7 +22,7 @@ module.exports = {
             results[results.length] = {app: parseInt(link), name: text}
           }
         });
-        req.io.emit('storesearched', {input: req.data, result: results});
+        req.socket.emit('storesearched', {input: req.data, result: results});
       }
     });
   }

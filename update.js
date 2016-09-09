@@ -13,7 +13,7 @@ module.exports = {
       base.fetch('http://steamcommunity.com/' + url + '/memberslistxml/?xml=1&p=' + page, function(err, content) {
         if(err) {
           console.log('Member fetching error for ' + url + '\n' + err);
-          req.io.emit('err', err.toString());
+          req.socket.emit('err', err.toString());
         } else {
           xml2js(content, function(err, res) {
             if(err || !res) {
@@ -22,7 +22,7 @@ module.exports = {
               $ = cheerio.load(content);
               var message = $('h3').text();
               console.log('> ' + message);
-              req.io.emit('err', message);
+              req.socket.emit('err', message);
               return;
             } else {
               res = res.memberList;
@@ -30,11 +30,11 @@ module.exports = {
               if(res.currentPage == 1) {
                 apps.title(req, res.groupDetails[0].groupName, req.data.index)
               }
-              req.io.emit('m', res.members[0].steamID64);
+              req.socket.emit('m', res.members[0].steamID64);
               if(parseInt(res.currentPage) < parseInt(res.totalPages)) {
                 rec(req, page + 1);
               } else {
-                req.io.emit('k');
+                req.socket.emit('k');
               }
             }
           });
@@ -60,8 +60,8 @@ module.exports = {
 
         res = res.friendsList;
         apps.title(req, 'Friends of ' + res.steamID, req.data.index);
-        req.io.emit('m', res.friends[0].friend);
-        req.io.emit('k');
+        req.socket.emit('m', res.friends[0].friend);
+        req.socket.emit('k');
       })
     });
   },
@@ -69,8 +69,8 @@ module.exports = {
   list: function(req) {
     var ids = req.data.name.substr(7).split(',');
     apps.title(req, 'VS', req.data.index);
-    req.io.emit('m', ids);
-    req.io.emit('k');
+    req.socket.emit('m', ids);
+    req.socket.emit('k');
   },
 
   // Grab a wishlist for a single person.
@@ -80,7 +80,7 @@ module.exports = {
       var ignore;
       if(err) {
         console.log('Error when fetching ' + url + ': ' + err);
-        req.io.emit('err', 'Error when fetching ' + url + ': ' + err);
+        req.socket.emit('err', 'Error when fetching ' + url + ': ' + err);
         ignore = true;
       }
       $ = cheerio.load(res);
@@ -99,7 +99,7 @@ module.exports = {
         // ensure an entry in our app db.
         apps.update(appID, obj, appLink);
       });
-      req.io.emit('u', {name: name, profile: req.data, games: games, star: stars.indexOf(req.data) >= 0, ignore: ignore});
+      req.socket.emit('u', {name: name, profile: req.data, games: games, star: stars.indexOf(req.data) >= 0, ignore: ignore});
     });
   },
   // Game info for the wishlist
@@ -108,46 +108,48 @@ module.exports = {
     for(var i = 0; i < req.data.fetch.length; ++ i) {
       requested[req.data.fetch[i]] = apps.get(req.data.fetch[i]);
     }
-    req.io.emit('games!', {games: requested, profile: req.data.profile});
+    req.socket.emit('games!', {games: requested, profile: req.data.profile});
   },
 
   // Check if this game is owned by this person in particular.
   owned: function(req) {
-    var matchOwnedGamesStart = 'var rgGames = ';
-    var matchOwnedGamesEnd = '];';
-    var url = /^\d{17}$/.test(req.data) ? ('profiles/' + req.data) : ('id/' + req.data);
-    base.fetch('http://steamcommunity.com/' + url + '/games?tab=all&l=english', function(err, res) {
-      if(err || !res) {
-        req.io.emit('owned!', {profile: req.data, games: null, name: '(?)'});
-      } else {
-        var $ = cheerio.load(res);
-        if(res.indexOf('<div class="profile_private_info">') >= 0) {
-          req.io.emit('owned!', {profile: req.data, games: null, name: $('title').text().replace('Steam Community :: ','')});
+    if (/^\d{17}$/.test(req.data)) {
+      var key = require('./key.json').apiKey;
+      var url = 'http://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/?key=' + key + '&steamid=' + req.data;
+      base.fetch(url, function(err, res) {
+        if(err || !res) {
+          req.socket.emit('owned!', {profile: req.data, games: null, name: '(?)'});
         } else {
-          // Well, this is awkward.
-          var start = res.indexOf(matchOwnedGamesStart) + matchOwnedGamesStart.length;
-          var end = res.indexOf(matchOwnedGamesEnd, start) + 1;
           try {
-            var games = JSON.parse(res.substring(start, end));
-            var owned = {};
-            for(var i = 0; i < games.length; ++ i) {
-              owned[games[i].appid] = true;
+            var response = JSON.parse(res),
+                games,
+                owned = {};
+            if (response.response) {
+              games = response.response.games;
+              for(var i = 0; i < games.length; ++ i) {
+                owned[games[i].appid] = true;
+              }
+
+              // wat an idjet
+              base.fetch('http://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?key=' + key + '&steamids=' + req.data, function (err, res) {
+                if (res) {
+                  var response = JSON.parse(res);
+                  req.socket.emit('owned!', {
+                    profile: req.data,
+                    games: owned,
+                    name: response.response.players[0].personaname,
+                    star: stars.indexOf(req.data) >= 0
+                  });
+                }
+              });
             }
-
-            // regular steam profile
-            var name = $('h1').text();
-            if(!name)
-              // trading card profile
-              name = $('.profile_small_header_name').text().trim();
-
-            req.io.emit('owned!', {profile: req.data, games: owned, name: name, star: stars.indexOf(req.data) >= 0});
           } catch(e) {
             console.log('Error when trying to work with:');
             console.log(res);
             console.log('Error: ' + e)
           }
         }
-      }
-    });
+      });
+    }
   }
 }

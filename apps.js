@@ -44,12 +44,12 @@ module.exports = {
     if(app) {
       this.getName(app, function(err, name) {
         if(!err)
-          req.io.emit('t', title + ' - ' + name);
+          req.socket.emit('t', title + ' - ' + name);
         else
-          req.io.emit('t', title);
+          req.socket.emit('t', title);
       });
     } else {
-      req.io.emit('t', title);
+      req.socket.emit('t', title);
     }
   }
 }
