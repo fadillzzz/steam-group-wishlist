@@ -1,6 +1,6 @@
 {
   "name": "steam-group-wishlist",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "author": "Marcus Bauer <mabako@gmail.com>",
   "description": "Steam Group/Wishlist Check",
   "repository": {
@@ -10,6 +10,7 @@
   "dependencies": {
     "cheerio": "^0.22.0",
     "cookie-parser": "^1.4.3",
+    "express.oi": "0.0.21",
     "log-timestamp": ">= 0.0.5",
     "openid": ">= 0.5.2",
     "pug": "^2.0.0-beta6",
